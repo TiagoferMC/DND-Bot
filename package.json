@@ -1,0 +1,20 @@
+{
+  "name": "dndbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "run": "node index",
+    "dev": "nodemon --trace-warnings index"
+  },
+  "keywords": [],
+  "author": "Tiagofer",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^12.3.1",
+    "mongoose": "^5.10.6"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
+  }
+}
