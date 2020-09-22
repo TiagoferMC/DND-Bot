@@ -5,6 +5,10 @@ const classSchema = new mongoose.Schema({
         type: String,
         required: [true, "Class name is required"]
     },
+    nameLower: {
+        type: String,
+        required: [true, "Lowercase class name is required"]
+    },
     level: {
         type: Number,
         default: 1,

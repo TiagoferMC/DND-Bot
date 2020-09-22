@@ -8,15 +8,14 @@ const classSchema = require('./classSchema.js');
 const Class = mongoose.model("Class", classSchema);
 
 mongoose.connect(atlasConnectionString, {useNewUrlParser: true, useFindAndModify: false, useUnifiedTopology: true }, err => {
-    if (err) throw err;
+   if (err) throw err;
     console.log("Connected to MongoDB!");
 });
-mongoose.set('returnOriginal', false);
 
 const client = new Discord.Client();
 
 client.once("ready", () => {
-    console.log("Ready!");
+    console.log("Discord Bot Ready!");
 })
 
 let pruneCharsPrimed = false;
@@ -46,14 +45,14 @@ client.on("message", message => {
             if (args[0]) {
                 let name = args[0];
                 character = new Character({
-                    name
+                    name,
+                    nameLower: name.toLowerCase()
                 });
                 character.save((err, dbCharacter) => {
                     if (err) { dbMessage = "Error creating character..."; throw err; }
                     else dbMessage = `Successfully created character: ${dbCharacter.name}`;
 
                     message.channel.send(dbMessage);
-                    console.log(dbMessage);
                 });
 
             break;
@@ -68,14 +67,14 @@ client.on("message", message => {
             if (args[0]) {
                 let name = args[0];
                 charClass = new Class({
-                    name
+                    name,
+                    nameLower: name.toLowerCase()
                 });
                 charClass.save((err, dbClass) => {
                     if (err) { dbMessage = "Error creating Class..."; throw err; }
                     else dbMessage = `Successfully created Class: ${dbClass.name}`;
 
                     message.channel.send(dbMessage);
-                    console.log(dbMessage);
                 });
 
             break;
@@ -90,7 +89,8 @@ client.on("message", message => {
         case 'find-character':
             if (args[0]) {
                 let name = args[0];
-                Character.findOne({ name }, (err, character) => {
+                let nameLower = name.toLowerCase();
+                Character.findOne({ nameLower }, (err, character) => {
                     if (err) dbMessage = "Error connecting to DB...";
                     else if (character) {
                         dbMessage = `\`\`\`Name: ${character.name}\nRace: ${character.race}\nClasses:\n`;
@@ -103,7 +103,6 @@ client.on("message", message => {
 
                     } else dbMessage = `No Character "${name}"" found...`;
 
-                    console.log(dbMessage);
                     message.channel.send(dbMessage);
                 });
 
@@ -121,7 +120,6 @@ client.on("message", message => {
                     characters.forEach(character => {dbMessage += character.name + "\n"});
                 else dbMessage = "No Characters in DB...";
 
-                console.log(dbMessage);
                 message.channel.send(dbMessage);
 
             });
@@ -134,7 +132,6 @@ client.on("message", message => {
                     charClasses.forEach(charClass => {dbMessage += charClass.name + "\n"});
                 else dbMessage = "No Classes in DB...";
 
-                console.log(dbMessage);
                 message.channel.send(dbMessage);
 
             });
@@ -147,11 +144,11 @@ client.on("message", message => {
         case 'delete-character':
             if (args[0]) {
                 let name = args[0];
-                Character.findOneAndDelete({ name }, (err, character) => {
+                let nameLower = name.toLowerCase();
+                Character.findOneAndDelete({ nameLower }, (err, character) => {
                     if (err) dbMessage = "Error connecting to DB...";
                     else dbMessage = character ? `Deleted Character: ${name}` : `Character ${name} not found...`;
 
-                    console.log(dbMessage);
                     message.channel.send(dbMessage);
                 });
 
@@ -165,11 +162,11 @@ client.on("message", message => {
         case 'delete-class':
             if (args[0]) {
                 let name = args[0];
-                Class.findOneAndDelete({ name }, (err, charClass) => {
+                let nameLower = name.toLowerCase();
+                Class.findOneAndDelete({ nameLower }, (err, charClass) => {
                     if (err) dbMessage = "Error connecting to DB...";
                     else dbMessage = charClass ? `Deleted Class: ${name}` : `Class ${name} not found...`;
 
-                    console.log(dbMessage);
                     message.channel.send(dbMessage);
                 });
 
@@ -194,24 +191,75 @@ client.on("message", message => {
             if (args[0] && args[1] && args[2]) {
 
                 let name = args[0];
+                let nameLower = name.toLowerCase();
                 let field = args[1].toLowerCase();
                 let newValue = args[2];
 
-                intFields = ["hp", "ac", "experience"];
+                intFields = ["hp", "ac", "experience", "level"];
 
-                if (intFields.includes(field) && !parseInt(newValue)) {
-                    message.channel.send(`${field} must be an Integer.`);
-                    break;
+                if (field != "class") {
+                    if (intFields.includes(field) && !parseInt(newValue)) {
+                        message.channel.send(`${field} must be an Integer.`);
+                        break;
+                    }
+
+                    Character.findOneAndUpdate({ nameLower }, {[field]: newValue}, (err, character) => {
+                        if (err) dbMessage = "Error updating character...";
+
+                        dbMessage = character ? `${character.name}'s ${field} changed to ${newValue}` : `No character ${name} found...`;
+
+                        message.channel.send(dbMessage);
+                    });
+                } else {
+
+                    let operation = args[2].toLowerCase();
+                    let className = args[3];
+                    let classNameLower = className.toLowerCase();
+
+                    switch (operation) {
+
+                        case "add":
+                            Class.findOne({nameLower: classNameLower}, (err, charClass) => {
+                            if (err) {
+                                dbMessage = "Error connecting to DB...";
+                                message.channel.send(dbMessage);
+                            } else if (!charClass) {
+                                dbMessage = `Class ${className} does not exist. please add it with \`${prefix}create-class\`.`;
+                                message.channel.send(dbMessage);
+                            }
+
+                            if (charClass)
+                                Character.findOneAndUpdate({ nameLower }, {$push: {classes: charClass}}, (err, character) => {
+                                    if (err) dbMessage = "Error updating character...";
+
+                                    dbMessage = character ? `Successfully added Class ${className} to Character ${name}` : `No character ${name} found...`;
+
+                                    message.channel.send(dbMessage);
+                                });
+                            });
+
+                            break;
+
+                        case "remove":
+                            Character.findOneAndUpdate({ nameLower }, {$pull: {classes: {nameLower: classNameLower}}}, (err, character) => {
+                                if (err) dbMessage = "Error updating character...";
+                                    dbMessage = character ? `Successfully removed Class ${className} from Character ${name}` : `No character ${name} found...`;
+                                message.channel.send(dbMessage);
+                            });
+
+                            break;
+
+
+                        case "set":
+                                    // field = args[4].toLowerCase();
+                                    // newValue = args[5].toLowerCase();
+                        default:
+                            break;
+                    }
+
                 }
 
-                Character.findOneAndUpdate({ name }, {[field]: newValue}, (err, character) => {
-                    if (err) dbMessage = "Error updating character...";
-
-                    dbMessage = character ? `${character.name}'s ${field} changed to ${newValue}` : `No character ${name} found...`;
-
-                    console.log(dbMessage);
-                    message.channel.send(dbMessage);
-                });
+//uodate-char Lis class set Rogue level 2
 
             } else {
                 message.channel.send(`Usage: \`${prefix}update-char <character name> <field to update> <new value>\``);
@@ -219,6 +267,9 @@ client.on("message", message => {
 
             break;
 
+        case "dev-char":
+        case "dev-class":
+            break;
         default:
             message.channel.send("Unknown command...");
             break;
@@ -242,27 +293,59 @@ client.on("message", message => {
             pruneClassesPrimed = true;
             break;
         case 'prune-confirm':
-            if (pruneCharsPrimed)
-                Character.deleteMany({}, (err, character) => {
-                    if (err) dbMessage = "Error connecting to DB...";
-                    else dbMessage = "YOU KILLED THEM ALL! OH THE HUMANITY!";
+            let error = false;
 
-                    console.log(dbMessage);
-                    message.channel.send(dbMessage);
-                });
-             if (pruneClassesPrimed)
-                Class.deleteMany({}, (err, charClass) => {
-                    if (err) dbMessage = "Error connecting to DB...";
-                    else dbMessage = "No more classes... What are you, a communist?";
-
-                    console.log(dbMessage);
-                    message.channel.send(dbMessage);
+            if (pruneCharsPrimed || pruneClassesPrimed) {
+                if (pruneCharsPrimed)
+                    Character.deleteMany({}, (err, character) => {
+                        if (err) error = true;
+                        else dbMessage = "YOU KILLED THEM ALL! OH THE HUMANITY!";
+                    });
+                if (pruneClassesPrimed)
+                    Class.deleteMany({}, (err, charClass) => {
+                        if (err) error = true;
+                        else dbMessage = "No more classes... What are you, a communist?";
                 });
 
-            else message.channel.send(`Type \`${prefix}prune if you wish to prune the database\``)
+                if (pruneCharsPrimed && pruneClassesPrimed)
+                    if (error) dbMessage = "Error connecting to the DB...";
+                    else dbMessage = "Deleting everything!";
+            } else dbMessage = `Type \`${prefix}prune if you wish to prune the database\``;
+
+            message.channel.send(dbMessage);
 
         default:
             prunePrimed = false;
+            break;
+    }
+
+    switch (command) {
+        case "dev-char":
+            if (args[0]) {
+                let nameLower = args[0].toLowerCase();
+                Character.findOne({ nameLower }, (err, character) => {
+                    if (err) dbMessage = "Error connecting to DB...";
+
+                    console.log(character);
+                    message.channel.send(`${character}`);
+                });
+
+            }
+
+            break;
+
+        case "dev-class":
+            if (args[0]) {
+                let nameLower = args[0].toLowerCase;
+                Class.findOne({ nameLower }, (err, dbClass) => {
+                    if (err) dbMessage = "Error connecting to DB...";
+
+                    console.log(dbClass);
+                    message.channel.send(dbClass);
+                });
+
+            }
+
             break;
     }
 });

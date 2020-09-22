@@ -6,6 +6,10 @@ const characterSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Name is required']
     },
+    nameLower: {
+        type: String,
+        required: [true, 'Lowercase Name is required']
+    },
     race: {
         type: String,
         default: 'Human',
@@ -13,7 +17,7 @@ const characterSchema = new mongoose.Schema({
     },
     classes: {
         type: [classSchema],
-        default: [{name: 'Fighter'}],
+        default: [{name: 'Fighter', nameLower: 'fighter'}],
         required: [true, 'A class is required']
     },
     background: {
