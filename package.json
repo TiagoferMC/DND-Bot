@@ -4,13 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "run": "node index",
-    "dev": "nodemon --trace-warnings index"
+    :x
+
+    "serve": "node server/index.js",
+    "dev-serve": "nodemon --trace-warnings server/index",
+    "dev-client": "nodemon --trace-warnings client/index"
   },
   "keywords": [],
   "author": "Tiagofer",
   "license": "ISC",
   "dependencies": {
+    "cors": "^2.8.5",
     "discord.js": "^12.3.1",
     "express": "^4.17.1",
     "mongoose": "^5.10.6"

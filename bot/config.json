@@ -1,0 +1,5 @@
+{
+	"token": "NzU3MjE0NjE2OTQxMTAxMTM5.X2dJEQ.LchbP1wkYbAvKgHyYQkCWBFf7Hw",
+    "mongoConnectionString": "mongodb://tiagoAdmin:tiagoAdmin@127.0.0.1:27017/dndbot?authSource=admin",
+	"prefix": "!"
+}
