@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node server/index.js",
-    "dev": "nodemon --trace-warnings server/index"
+    "dev": "nodemon --trace-warnings server/index.js"
   },
   "keywords": [],
   "author": "Tiagofer",
@@ -17,6 +17,7 @@
     "mongoose": "^5.10.6"
   },
   "devDependencies": {
+    "eruda": "^2.4.0",
     "nodemon": "^2.0.4"
   }
 }
