@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const classSchema = require('./classSchema.js');
+const classSchema = require('../classes/classSchema.js');
 
 const characterSchema = new mongoose.Schema({
     name: {
