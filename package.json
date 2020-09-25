@@ -4,11 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    :x
-
-    "serve": "node server/index.js",
-    "dev-serve": "nodemon --trace-warnings server/index",
-    "dev-client": "nodemon --trace-warnings client/index"
+    "start": "node server/index.js",
+    "dev": "nodemon --trace-warnings server/index"
   },
   "keywords": [],
   "author": "Tiagofer",
