@@ -9,7 +9,7 @@
   },
   "keywords": [],
   "author": "Tiagofer",
-  "license": "ISC",
+  "license": "Unlicense",
   "dependencies": {
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
