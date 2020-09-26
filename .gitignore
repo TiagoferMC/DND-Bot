@@ -1,8 +1,8 @@
 # Config files
-server/configs/
+/server/configs/
 
 # Vue Client Files
-client
+/client
 
 # Logs
 logs
