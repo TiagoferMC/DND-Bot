@@ -1,6 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const { getDBURI, getOpts } = require('../database.js');
+const { getDbUri, getOpts } = require('../database.js');
 const Character = require('./characterSchema.js');
 
 const router = express.Router();
@@ -11,7 +11,7 @@ router.get('/', async (req, res) => {
 
     connect()
 
-    await Character.find({}, (err, charArr) => {
+    await Character.find({...req.body}, (err, charArr) => {
         if (err) throw err;
         else characters = charArr;
     });
@@ -24,10 +24,7 @@ router.post('/', async (req, res) => {
     connect();
     
     try {
-        let character = new Character({
-            ...req.body,
-            nameLower: req.body.name.toLowerCase()
-        });
+        let character = new Character({...req.body});
 
         await character.save();
         res.status(201).send();
@@ -38,7 +35,12 @@ router.post('/', async (req, res) => {
 
 // Update Char
 router.put('/:id', async (req, res) => {
-
+    connect();
+    if (req.body.name === '') res.status(400).send("Cannot set empty name");
+    else await Character.findByIdAndUpdate(req.params.id, {...req.body}, err => {
+        if (err) res.status(500).send();
+        else res.status(201).send();
+    });
 });
 
 // Delete Char
@@ -51,7 +53,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 function connect() {
-    mongoose.connect(getDBURI(), getOpts(), err => {
+    mongoose.connect(getDbUri(), getOpts(), err => {
         if (err) throw err;
         console.log("Connected to MongoDB - Characters!")
     });

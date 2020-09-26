@@ -9,8 +9,13 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
+// Characters API
 const characters = require('./routes/api/characters/characters');
 app.use('/api/characters', characters);
+
+// Classes API
+const classes = require('./routes/api/classes/classes');
+app.use('/api/classes', classes);
 
 const port = process.env.PORT || 5000;
 

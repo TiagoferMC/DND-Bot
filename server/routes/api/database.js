@@ -1,6 +1,6 @@
 const { mongoConnectionString, localMongoConnectionString } = require('../../configs/config.json');
 
-function getDBURI() {
+function getDbUri() {
     return (process.env.NODE_ENV === 'production') ? mongoConnectionString : localMongoConnectionString;
 }
 
@@ -10,4 +10,4 @@ function getOpts() {
     useUnifiedTopology: true }
 }
 
-module.exports = { getDBURI, getOpts };
+module.exports = { getDbUri, getOpts };

@@ -6,10 +6,6 @@ const characterSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Name is required']
     },
-    nameLower: {
-        type: String,
-        required: [true, 'Lowercase Name is required']
-    },
     race: {
         type: String,
         default: 'Human',
