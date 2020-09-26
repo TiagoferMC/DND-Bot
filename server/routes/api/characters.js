@@ -1,7 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const { getDbUri, getOpts } = require('../database.js');
-const Character = require('./characterSchema.js');
+const { getDbUri, getOpts } = require('./database.js');
+const characterSchema = require('../../schemas/characterSchema.js');
+const Character = mongoose.model("Character", characterSchema);
 
 const router = express.Router();
 
@@ -55,7 +56,6 @@ router.delete('/:id', async (req, res) => {
 function connect() {
     mongoose.connect(getDbUri(), getOpts(), err => {
         if (err) throw err;
-        console.log("Connected to MongoDB - Characters!")
     });
 }
 

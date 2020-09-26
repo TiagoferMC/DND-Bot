@@ -1,7 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const CharacterService = require('./routes/api/characters/characters.js')
 
 const app = express();
 
@@ -10,11 +9,11 @@ app.use(bodyParser.json());
 app.use(cors());
 
 // Characters API
-const characters = require('./routes/api/characters/characters');
+const characters = require('./routes/api/characters');
 app.use('/api/characters', characters);
 
 // Classes API
-const classes = require('./routes/api/classes/classes');
+const classes = require('./routes/api/classes');
 app.use('/api/classes', classes);
 
 const port = process.env.PORT || 5000;

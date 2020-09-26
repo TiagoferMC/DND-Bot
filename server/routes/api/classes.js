@@ -1,7 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const { getDbUri, getOpts } = require('../database.js');
-const classSchema = require('./classSchema.js');
+const { getDbUri, getOpts } = require('./database.js');
+const classSchema = require('../../schemas/classSchema.js');
 const Class = mongoose.model("Class", classSchema);
 
 const router = express.Router();
@@ -56,7 +56,6 @@ router.delete('/:id', async (req, res) => {
 function connect() {
     mongoose.connect(getDbUri(), getOpts(), err => {
         if (err) throw err;
-        console.log("Connected to MongoDB - Classes!")
     });
 }
 

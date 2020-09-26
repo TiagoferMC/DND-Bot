@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const classSchema = require('../classes/classSchema.js');
+const classSchema = require('./classSchema.js');
 
 const characterSchema = new mongoose.Schema({
     name: {
@@ -50,5 +50,4 @@ const characterSchema = new mongoose.Schema({
     }
 });
 
-Character = mongoose.model("Character", characterSchema);
-module.exports = Character;
+module.exports = characterSchema;
