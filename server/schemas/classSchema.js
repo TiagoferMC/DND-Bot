@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+import { Schema } from "mongoose";
 
-const classSchema = new mongoose.Schema({
+const classSchema = new Schema({
     name: {
         type: String,
         required: [true, "Class name is required"]
@@ -17,4 +17,4 @@ const classSchema = new mongoose.Schema({
     }
 });
 
-module.exports = classSchema;
+export default classSchema;

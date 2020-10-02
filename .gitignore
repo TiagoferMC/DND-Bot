@@ -4,6 +4,9 @@
 # Vue Client Files
 /client
 
+# Prod Files
+/dist
+
 # Logs
 logs
 *.log

@@ -1,22 +1,19 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const { getDbUri, getOpts } = require("./database.js");
-const classSchema = require("../../schemas/classSchema.js").default;
-const Class = mongoose.model("Class", classSchema);
+import { Router } from "express";
+import { model, connect as _connect } from "mongoose";
+import { dbUri, dbOpts } from "./database.js";
+import classSchema from "../../schemas/classSchema.js";
+const Class = model("Class", classSchema);
 
-const router = express.Router();
+const router = Router();
 
 // Get Classes
 router.get("/", async (req, res) => {
     let classes;
 
-    if (connect() === 500) {
-        res.status(500).send("Internal Server Error...");
-        return;
-    }
+    if ((await connect(res)) === 500) return;
 
     await Class.find({ ...req.body }, (err, classArr) => {
-        if (err) res.status(500).send("Internal Server Error...");
+        if (err) res.status(500).send("Internal Server Error Finding...");
         else classes = classArr;
     });
 
@@ -25,10 +22,7 @@ router.get("/", async (req, res) => {
 
 // Add Class
 router.post("/", async (req, res) => {
-    if (connect() === 500) {
-        res.status(500).send("Internal Server Error...");
-        return;
-    }
+    if ((await connect(res)) === 500) return;
 
     try {
         let classObj = new Class({ ...req.body });
@@ -45,10 +39,7 @@ router.post("/", async (req, res) => {
 
 // Update Class
 router.put("/:id", async (req, res) => {
-    if (connect() === 500) {
-        res.status(500).send("Internal Server Error...");
-        return;
-    }
+    if ((await connect(res)) === 500) return;
 
     if (req.body.name === "")
         res.status(400).send("Cannot set empty class name");
@@ -61,10 +52,7 @@ router.put("/:id", async (req, res) => {
 
 // Delete Class
 router.delete("/:id", async (req, res) => {
-    if (connect() === 500) {
-        res.status(500).send("Internal Server Error...");
-        return;
-    }
+    if ((await connect(res)) === 500) return;
 
     await Class.findByIdAndDelete(req.params.id, (err) => {
         if (err) res.status(500).send("Internal Server Error...");
@@ -72,11 +60,14 @@ router.delete("/:id", async (req, res) => {
     });
 });
 
-function connect() {
-    mongoose.connect(getDbUri(), getOpts(), (err) => {
-        if (err) return 500;
-        else return 200;
+async function connect(res) {
+    return await _connect(dbUri, dbOpts, (err) => {
+        if (err) {
+            res.status(500).send("Internal Server Error...");
+            return 500;
+        }
+        return 200;
     });
 }
 
-module.exports = router;
+export default router;

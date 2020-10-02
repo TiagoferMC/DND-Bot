@@ -1,13 +1,21 @@
-const { mongoConnectionString, token } = require("./config.json");
-let { prefix } = require("./config.json");
-const Discord = require("discord.js");
-const mongoose = require("mongoose");
-const Character = require("./characterSchema.js");
-const classSchema = require("./classSchema.js");
+import { mongoConnectionString, token } from "./config.json";
+import { cmdPrefix } from "./config.json";
+import { Client } from "discord.js";
+import { model, connect } from "mongoose";
+import Character, {
+    findOne,
+    find,
+    findOneAndDelete,
+    findOneAndUpdate,
+    deleteMany
+} from "./characterSchema.js";
+import classSchema from "./classSchema.js";
 
-const Class = mongoose.model("Class", classSchema);
+let prefix = cmdPrefix;
 
-mongoose.connect(
+const Class = model("Class", classSchema);
+
+connect(
     mongoConnectionString,
     {
         useNewUrlParser: true,
@@ -20,7 +28,7 @@ mongoose.connect(
     }
 );
 
-const client = new Discord.Client();
+const client = new Client();
 
 function sendMessage(message, content) {
     message.channel.send(content);
@@ -56,7 +64,7 @@ client.on("message", (message) => {
                 let name = args[0];
                 let nameLower = name.toLowerCase();
 
-                Character.findOne({ nameLower }).exec((err, matchedChar) => {
+                findOne({ nameLower }).exec((err, matchedChar) => {
                     if (err)
                         sendMessage(message, "Error creating Character...");
                     else if (matchedChar)
@@ -135,7 +143,7 @@ client.on("message", (message) => {
             if (args[0]) {
                 let name = args[0];
                 let nameLower = name.toLowerCase();
-                Character.findOne({ nameLower }, (err, character) => {
+                findOne({ nameLower }, (err, character) => {
                     if (err) sendMessage(message, "Error finding Character...");
                     else if (character) {
                         let msgContent = `\`\`\`Name: ${character.name}\nRace: ${character.race}\nClasses:\n`;
@@ -160,7 +168,7 @@ client.on("message", (message) => {
 
         case "list-characters":
         case "list-chars":
-            Character.find({}, "name")
+            find({}, "name")
                 .sort("created")
                 .exec((err, characters) => {
                     if (err)
@@ -198,7 +206,7 @@ client.on("message", (message) => {
             if (args[0]) {
                 let name = args[0];
                 let nameLower = name.toLowerCase();
-                Character.findOneAndDelete({ nameLower }, (err, character) => {
+                findOneAndDelete({ nameLower }, (err, character) => {
                     if (err)
                         sendMessage(message, "Error deleting Character...");
                     else
@@ -273,7 +281,7 @@ client.on("message", (message) => {
                         sendMessage(message, `${field} must be an Integer.`);
                         break;
                     }
-                    Character.findOneAndUpdate(
+                    findOneAndUpdate(
                         { nameLower },
                         { [field]: newValue },
                         (err, character) => {
@@ -292,7 +300,7 @@ client.on("message", (message) => {
                         }
                     );
                 } else if (field === "name") {
-                    Character.findOne(
+                    findOne(
                         { nameLower: newValue.toLowerCase() },
                         (err, matchedChar) => {
                             if (err)
@@ -306,7 +314,7 @@ client.on("message", (message) => {
                                     `There already exists a Character named ${matchedChar.name}. Character names must be unique.`
                                 );
                             else {
-                                Character.findOneAndUpdate(
+                                findOneAndUpdate(
                                     { nameLower },
                                     {
                                         name: newValue,
@@ -346,7 +354,7 @@ client.on("message", (message) => {
                                             "Error adding Class..."
                                         );
                                     else if (charClass)
-                                        Character.findOne(
+                                        findOne(
                                             { nameLower },
                                             (err, character) => {
                                                 if (err)
@@ -404,47 +412,44 @@ client.on("message", (message) => {
 
                             break;
                         case "remove":
-                            Character.findOne(
-                                { nameLower },
-                                (err, character) => {
-                                    if (err)
-                                        sendMessage(
-                                            message,
-                                            "Error removing class..."
-                                        );
-                                    else if (character) {
-                                        let classObj = character.classes.filter(
-                                            (charClass) =>
-                                                charClass.nameLower ===
-                                                classNameLower
-                                        );
+                            findOne({ nameLower }, (err, character) => {
+                                if (err)
+                                    sendMessage(
+                                        message,
+                                        "Error removing class..."
+                                    );
+                                else if (character) {
+                                    let classObj = character.classes.filter(
+                                        (charClass) =>
+                                            charClass.nameLower ===
+                                            classNameLower
+                                    );
 
-                                        if (classObj.length) {
-                                            character.classes.pull(classObj[0]);
-                                            character.save((err, charObj) => {
-                                                if (err)
-                                                    sendMessage(
-                                                        message,
-                                                        "Error removing class..."
-                                                    );
-                                                else
-                                                    sendMessage(
-                                                        message,
-                                                        `Successfully removed Class ${classObj[0].name} from Character ${charObj.name}`
-                                                    );
-                                            });
-                                        } else
-                                            sendMessage(
-                                                message,
-                                                `Character ${character.name} does not have the ${className} class.`
-                                            );
+                                    if (classObj.length) {
+                                        character.classes.pull(classObj[0]);
+                                        character.save((err, charObj) => {
+                                            if (err)
+                                                sendMessage(
+                                                    message,
+                                                    "Error removing class..."
+                                                );
+                                            else
+                                                sendMessage(
+                                                    message,
+                                                    `Successfully removed Class ${classObj[0].name} from Character ${charObj.name}`
+                                                );
+                                        });
                                     } else
                                         sendMessage(
                                             message,
-                                            `No character ${name} found...`
+                                            `Character ${character.name} does not have the ${className} class.`
                                         );
-                                }
-                            );
+                                } else
+                                    sendMessage(
+                                        message,
+                                        `No character ${name} found...`
+                                    );
+                            });
 
                             break;
                         case "set":
@@ -463,50 +468,45 @@ client.on("message", (message) => {
                                     break;
                                 }
 
-                                Character.findOne(
-                                    { nameLower },
-                                    (err, character) => {
-                                        if (err)
-                                            sendMessage(
-                                                message,
-                                                "Error updating character..."
-                                            );
-                                        else if (character) {
-                                            let index = character.classes.findIndex(
-                                                (charClass) =>
-                                                    charClass.nameLower ===
-                                                    classNameLower
-                                            );
-                                            if (index !== -1) {
-                                                character.classes[index][
-                                                    field
-                                                ] = newValue;
-                                                character.save(
-                                                    (err, charObj) => {
-                                                        if (err)
-                                                            sendMessage(
-                                                                message,
-                                                                "Error updating character..."
-                                                            );
-                                                        else
-                                                            sendMessage(
-                                                                message,
-                                                                `${character.name}'s ${character.classes[index].name} ${field} changed to ${charObj.name}`
-                                                            );
-                                                    }
-                                                );
-                                            } else
-                                                sendMessage(
-                                                    message,
-                                                    `Character ${character.name} does not have the ${className} class.`
-                                                );
+                                findOne({ nameLower }, (err, character) => {
+                                    if (err)
+                                        sendMessage(
+                                            message,
+                                            "Error updating character..."
+                                        );
+                                    else if (character) {
+                                        let index = character.classes.findIndex(
+                                            (charClass) =>
+                                                charClass.nameLower ===
+                                                classNameLower
+                                        );
+                                        if (index !== -1) {
+                                            character.classes[index][
+                                                field
+                                            ] = newValue;
+                                            character.save((err, charObj) => {
+                                                if (err)
+                                                    sendMessage(
+                                                        message,
+                                                        "Error updating character..."
+                                                    );
+                                                else
+                                                    sendMessage(
+                                                        message,
+                                                        `${character.name}'s ${character.classes[index].name} ${field} changed to ${charObj.name}`
+                                                    );
+                                            });
                                         } else
                                             sendMessage(
                                                 message,
-                                                `No character ${name} found`
+                                                `Character ${character.name} does not have the ${className} class.`
                                             );
-                                    }
-                                );
+                                    } else
+                                        sendMessage(
+                                            message,
+                                            `No character ${name} found`
+                                        );
+                                });
                             } else {
                                 sendMessage(
                                     message,
@@ -569,7 +569,7 @@ client.on("message", (message) => {
             if (pruneCharsPrimed || pruneClassesPrimed) {
                 let error = false;
                 if (pruneCharsPrimed)
-                    Character.deleteMany({}, (err) => {
+                    deleteMany({}, (err) => {
                         if (err) error = true;
                         else
                             sendMessage(
@@ -608,7 +608,7 @@ client.on("message", (message) => {
         case "dev-char":
             if (args[0]) {
                 let nameLower = args[0].toLowerCase();
-                Character.findOne({ nameLower }, (err, character) => {
+                findOne({ nameLower }, (err, character) => {
                     if (err) sendMessage(message, "Error connecting to DB...");
 
                     console.log(character);

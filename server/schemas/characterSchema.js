@@ -1,7 +1,7 @@
-const mongoose = require("mongoose");
-const classSchema = require("./classSchema.js");
+import { Schema } from "mongoose";
+import classSchema from "./classSchema.js";
 
-const characterSchema = new mongoose.Schema({
+const characterSchema = new Schema({
     name: {
         type: String,
         required: [true, "Name is required"]
@@ -25,7 +25,7 @@ const characterSchema = new mongoose.Schema({
         type: Number,
         required: [false, "Experience is optional"]
     },
-    alignement: {
+    alignment: {
         type: String,
         required: [false, "Alignement is optional"]
     },
@@ -50,4 +50,4 @@ const characterSchema = new mongoose.Schema({
     }
 });
 
-module.exports = characterSchema;
+export default characterSchema;

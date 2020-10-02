@@ -1,19 +1,18 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
+import express from "express";
+import { json } from "body-parser";
+import cors from "cors";
 
 const app = express();
-
 // Middleware
-app.use(bodyParser.json());
+app.use(json());
 app.use(cors());
 
 // Characters API
-const characters = require("./routes/api/characters");
+import characters from "./routes/api/characters";
 app.use("/api/characters", characters);
 
 // Classes API
-const classes = require("./routes/api/classes");
+import classes from "./routes/api/classes";
 app.use("/api/classes", classes);
 
 const port = process.env.PORT || 5000;
