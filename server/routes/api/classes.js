@@ -1,16 +1,16 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const { getDbUri, getOpts } = require('./database.js');
-const classSchema = require('../../schemas/classSchema.js');
+const express = require("express");
+const mongoose = require("mongoose");
+const { getDbUri, getOpts } = require("./database.js");
+const classSchema = require("../../schemas/classSchema.js");
 const Class = mongoose.model("Class", classSchema);
 
 const router = express.Router();
 
 // Get Classes
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
     let classes;
 
-    connect()
+    connect();
 
     await Class.find({ ...req.body }, (err, classArr) => {
         if (err) throw err;
@@ -21,7 +21,7 @@ router.get('/', async (req, res) => {
 });
 
 // Add Class
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
     connect();
 
     try {
@@ -35,26 +35,25 @@ router.post('/', async (req, res) => {
 });
 
 // Update Class
-router.put('/:id', async (req, res) => {
+router.put("/:id", async (req, res) => {
     connect();
-    if (req.body.name === '') res.status(400).send("Cannot set empty name");
-    else await Class.findByIdAndUpdate(req.params.id, { ...req.body }, err => {
-        if (err) res.status(500).send();
-        else res.status(201).send();
-    });
+    if (req.body.name === "") res.status(400).send("Cannot set empty name");
+    else
+        await Class.findByIdAndUpdate(req.params.id, { ...req.body }, (err) => {
+            if (err) res.status(500).send();
+            else res.status(201).send();
+        });
 });
 
 // Delete Class
-router.delete('/:id', async (req, res) => {
+router.delete("/:id", async (req, res) => {
     connect();
-    await Class.findByIdAndDelete(req.params.id, err => {
-
-    });
+    await Class.findByIdAndDelete(req.params.id, (err) => {});
     res.status(200).send();
 });
 
 function connect() {
-    mongoose.connect(getDbUri(), getOpts(), err => {
+    mongoose.connect(getDbUri(), getOpts(), (err) => {
         if (err) throw err;
     });
 }

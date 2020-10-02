@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const classSchema = new mongoose.Schema({
     name: {
@@ -13,7 +13,7 @@ const classSchema = new mongoose.Schema({
     created: {
         type: Date,
         default: Date.now(),
-        required: [true, 'Created date is required']
+        required: [true, "Created date is required"]
     }
 });
 

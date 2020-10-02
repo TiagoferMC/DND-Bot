@@ -1,18 +1,18 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const { getDbUri, getOpts } = require('./database.js');
-const characterSchema = require('../../schemas/characterSchema.js');
+const express = require("express");
+const mongoose = require("mongoose");
+const { getDbUri, getOpts } = require("./database.js");
+const characterSchema = require("../../schemas/characterSchema.js");
 const Character = mongoose.model("Character", characterSchema);
 
 const router = express.Router();
 
 // Get Chars
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
     let characters;
 
-    connect()
+    connect();
 
-    await Character.find({...req.body}, (err, charArr) => {
+    await Character.find({ ...req.body }, (err, charArr) => {
         if (err) throw err;
         else characters = charArr;
     });
@@ -21,11 +21,11 @@ router.get('/', async (req, res) => {
 });
 
 // Add Char
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
     connect();
-    
+
     try {
-        let character = new Character({...req.body});
+        let character = new Character({ ...req.body });
 
         await character.save();
         res.status(201).send();
@@ -35,26 +35,29 @@ router.post('/', async (req, res) => {
 });
 
 // Update Char
-router.put('/:id', async (req, res) => {
+router.put("/:id", async (req, res) => {
     connect();
-    if (req.body.name === '') res.status(400).send("Cannot set empty name");
-    else await Character.findByIdAndUpdate(req.params.id, {...req.body}, err => {
-        if (err) res.status(500).send();
-        else res.status(201).send();
-    });
+    if (req.body.name === "") res.status(400).send("Cannot set empty name");
+    else
+        await Character.findByIdAndUpdate(
+            req.params.id,
+            { ...req.body },
+            (err) => {
+                if (err) res.status(500).send();
+                else res.status(201).send();
+            }
+        );
 });
 
 // Delete Char
-router.delete('/:id', async (req, res) => {
+router.delete("/:id", async (req, res) => {
     connect();
-    await Character.findByIdAndDelete(req.params.id, err => {
-        
-    });
+    await Character.findByIdAndDelete(req.params.id, (err) => {});
     res.status(200).send();
 });
 
 function connect() {
-    mongoose.connect(getDbUri(), getOpts(), err => {
+    mongoose.connect(getDbUri(), getOpts(), (err) => {
         if (err) throw err;
     });
 }
