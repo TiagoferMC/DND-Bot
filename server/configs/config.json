@@ -1,6 +1,6 @@
 {
-    "discordToken": "NzU3MjE0NjE2OTQxMTAxMTM5.X2dJEQ.LchbP1wkYbAvKgHyYQkCWBFf7Hw",
-    "localMongoConnectionString": "mongodb://tiagoAdmin:tiagoAdmin@127.0.0.1:27017/dndbot?authSource=admin",
-    "mongoConnectionString": "<TBA>",
-    "prefix": "!"
+  "discordToken": "NzU3MjE0NjE2OTQxMTAxMTM5.X2dJEQ.LchbP1wkYbAvKgHyYQkCWBFf7Hw",
+  "localMongoConnectionString": "mongodb://tiagoAdmin:tiagoAdmin@127.0.0.1:27017/dndbot?authSource=admin",
+  "mongoConnectionString": "<TBA>",
+  "prefix": "!"
 }

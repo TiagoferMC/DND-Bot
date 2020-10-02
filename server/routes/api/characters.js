@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const { getDbUri, getOpts } = require("./database.js");
-const characterSchema = require("../../schemas/characterSchema.js");
+const characterSchema = require("../../schemas/characterSchema.js").default;
 const Character = mongoose.model("Character", characterSchema);
 
 const router = express.Router();
@@ -10,10 +10,13 @@ const router = express.Router();
 router.get("/", async (req, res) => {
     let characters;
 
-    connect();
+    if (connect() === 500) {
+        res.status(500).send("Internal Server Error...");
+        return;
+    }
 
     await Character.find({ ...req.body }, (err, charArr) => {
-        if (err) throw err;
+        if (err) res.status(500).send("Internal Server Error...");
         else characters = charArr;
     });
 
@@ -22,28 +25,38 @@ router.get("/", async (req, res) => {
 
 // Add Char
 router.post("/", async (req, res) => {
-    connect();
+    if (connect() === 500) {
+        res.status(500).send("Internal Server Error...");
+        return;
+    }
 
     try {
         let character = new Character({ ...req.body });
 
-        await character.save();
-        res.status(201).send();
+        await character.save((err) => {
+            if (err) res.status(500).send("Internal Server Error...");
+            else res.status(201).send();
+        });
     } catch (err) {
         res.status(400).send("Error! Name is required!");
+        return;
     }
 });
 
 // Update Char
 router.put("/:id", async (req, res) => {
-    connect();
+    if (connect() === 500) {
+        res.status(500).send("Internal Server Error...");
+        return;
+    }
+
     if (req.body.name === "") res.status(400).send("Cannot set empty name");
     else
         await Character.findByIdAndUpdate(
             req.params.id,
             { ...req.body },
             (err) => {
-                if (err) res.status(500).send();
+                if (err) res.status(500).send("Internal Server Error...");
                 else res.status(201).send();
             }
         );
@@ -51,14 +64,21 @@ router.put("/:id", async (req, res) => {
 
 // Delete Char
 router.delete("/:id", async (req, res) => {
-    connect();
-    await Character.findByIdAndDelete(req.params.id, (err) => {});
-    res.status(200).send();
+    if (connect() === 500) {
+        res.status(500).send("Internal Server Error...");
+        return;
+    }
+
+    await Character.findByIdAndDelete(req.params.id, (err) => {
+        if (err) res.status(500).send("Internal Server Error...");
+        else res.status(200).send();
+    });
 });
 
 function connect() {
     mongoose.connect(getDbUri(), getOpts(), (err) => {
-        if (err) throw err;
+        if (err) return 500;
+        else return 200;
     });
 }
 

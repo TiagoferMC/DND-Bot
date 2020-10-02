@@ -65,7 +65,7 @@ client.on("message", (message) => {
                             `There already exists a Character named ${matchedChar.name}. Character names must be unique.`
                         );
                     else {
-                        character = new Character({
+                        let character = new Character({
                             name,
                             nameLower: name.toLowerCase()
                         });
@@ -107,7 +107,7 @@ client.on("message", (message) => {
                             `There already exists a ${matchedClass.name} Class.`
                         );
                     else {
-                        charClass = new Class({
+                        let charClass = new Class({
                             name,
                             nameLower: name.toLowerCase()
                         });
@@ -245,12 +245,17 @@ client.on("message", (message) => {
         case "prune":
             sendMessage(
                 message,
-                `Use \`${prefix}prune-chars\` to prune the characters database, \`${prefix}prune-classes\` to prune the classes database, or \`${prefix}prune-all\` to prune \*\*ALL\*\* databases.`
+                `Use \`${prefix}prune-chars\` to prune the characters database, \`${prefix}prune-classes\` to prune the classes database, or \`${prefix}prune-all\` to prune **ALL** databases.`
             );
+        // falls through
         case "prune-all":
+        // falls through
         case "prune-chars":
+        // falls through
         case "prune-characters":
+        // falls through
         case "prune-classes":
+        // falls through
         case "prune-confirm":
             break;
 
@@ -261,7 +266,7 @@ client.on("message", (message) => {
                 let field = args[1].toLowerCase();
                 let newValue = args[2];
 
-                intFields = ["hp", "ac", "experience", "level"];
+                let intFields = ["hp", "ac", "experience", "level"];
 
                 if (field !== "class" && field !== "name") {
                     if (intFields.includes(field) && !parseInt(newValue)) {
@@ -408,7 +413,7 @@ client.on("message", (message) => {
                                             "Error removing class..."
                                         );
                                     else if (character) {
-                                        classObj = character.classes.filter(
+                                        let classObj = character.classes.filter(
                                             (charClass) =>
                                                 charClass.nameLower ===
                                                 classNameLower
@@ -467,7 +472,7 @@ client.on("message", (message) => {
                                                 "Error updating character..."
                                             );
                                         else if (character) {
-                                            index = character.classes.findIndex(
+                                            let index = character.classes.findIndex(
                                                 (charClass) =>
                                                     charClass.nameLower ===
                                                     classNameLower
@@ -486,7 +491,7 @@ client.on("message", (message) => {
                                                         else
                                                             sendMessage(
                                                                 message,
-                                                                `${character.name}'s ${character.classes[index].name} ${field} changed to ${newValue}`
+                                                                `${character.name}'s ${character.classes[index].name} ${field} changed to ${charObj.name}`
                                                             );
                                                     }
                                                 );
@@ -508,6 +513,7 @@ client.on("message", (message) => {
                                     `Usage: \`${prefix}update-char <character name> class set <class> <property> <value>\``
                                 );
                             }
+                            break;
                         default:
                             break;
                     }
@@ -562,9 +568,8 @@ client.on("message", (message) => {
         case "prune-confirm":
             if (pruneCharsPrimed || pruneClassesPrimed) {
                 let error = false;
-                // let msgContent = "";
                 if (pruneCharsPrimed)
-                    Character.deleteMany({}, (err, character) => {
+                    Character.deleteMany({}, (err) => {
                         if (err) error = true;
                         else
                             sendMessage(
@@ -574,7 +579,7 @@ client.on("message", (message) => {
                     });
 
                 if (pruneClassesPrimed)
-                    Class.deleteMany({}, (err, charClass) => {
+                    Class.deleteMany({}, (err) => {
                         if (err) error = true;
                         else
                             sendMessage(
@@ -592,8 +597,10 @@ client.on("message", (message) => {
                     message,
                     `Type \`${prefix}prune if you wish to prune the database\``
                 );
+        // falls through
         default:
-            prunePrimed = false;
+            pruneCharsPrimed = false;
+            pruneClassesPrimed = false;
             break;
     }
 
@@ -602,7 +609,7 @@ client.on("message", (message) => {
             if (args[0]) {
                 let nameLower = args[0].toLowerCase();
                 Character.findOne({ nameLower }, (err, character) => {
-                    if (err) dbMessage = "Error connecting to DB...";
+                    if (err) sendMessage(message, "Error connecting to DB...");
 
                     console.log(character);
                     sendMessage(message, `${character}`);
@@ -615,7 +622,7 @@ client.on("message", (message) => {
             if (args[0]) {
                 let nameLower = args[0].toLowerCase;
                 Class.findOne({ nameLower }, (err, dbClass) => {
-                    if (err) dbMessage = "Error connecting to DB...";
+                    if (err) sendMessage(message, "Error connecting to DB...");
 
                     console.log(dbClass);
                     sendMessage(message, dbClass);
