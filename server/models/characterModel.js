@@ -1,5 +1,4 @@
-import { Schema } from "mongoose";
-import classSchema from "./classSchema.js";
+import { Schema, model } from "mongoose";
 
 const characterSchema = new Schema({
     name: {
@@ -12,9 +11,20 @@ const characterSchema = new Schema({
         required: [true, "Race is required"]
     },
     classes: {
-        type: [classSchema],
-        default: [{ name: "Fighter", nameLower: "fighter" }],
-        required: [true, "A class is required"]
+        type: [
+            {
+                level: {
+                    type: Number,
+                    default: 1,
+                    required: [true, "Level is required"]
+                },
+                class: {
+                    type: { type: Schema.Types.ObjectId, ref: "Class" },
+                    required: [false, "Class is not required"]
+                }
+            }
+        ],
+        required: [true, "Race is required"]
     },
     background: {
         type: String,
@@ -27,7 +37,7 @@ const characterSchema = new Schema({
     },
     alignment: {
         type: String,
-        required: [false, "Alignement is optional"]
+        required: [false, "Alignment is optional"]
     },
     playerName: {
         type: String,
@@ -50,4 +60,6 @@ const characterSchema = new Schema({
     }
 });
 
-export default characterSchema;
+const Character = model("Character", characterSchema);
+
+export default Character;

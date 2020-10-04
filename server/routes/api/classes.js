@@ -1,8 +1,7 @@
 import { Router } from "express";
-import { model, connect as _connect } from "mongoose";
+import { connect as _connect } from "mongoose";
 import { dbUri, dbOpts } from "./database.js";
-import classSchema from "../../schemas/classSchema.js";
-const Class = model("Class", classSchema);
+import Class from "../../models/classModel.js";
 
 const router = Router();
 
@@ -13,7 +12,7 @@ router.get("/", async (req, res) => {
     if ((await connect(res)) === 500) return;
 
     await Class.find({ ...req.body }, (err, classArr) => {
-        if (err) res.status(500).send("Internal Server Error Finding...");
+        if (err) res.status(500).send(err.message);
         else classes = classArr;
     });
 
@@ -24,30 +23,76 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
     if ((await connect(res)) === 500) return;
 
-    try {
-        let classObj = new Class({ ...req.body });
-
-        await classObj.save((err) => {
-            if (err) res.status(500).send("Internal Server Error...");
-            else res.status(201).send();
-        });
-    } catch (err) {
-        res.status(400).send("Error! Class Name is required!");
+    let classObj = new Class({ ...req.body });
+    if (!classObj.name) {
+        res.status(400).send("Error! Incorrectly formatted Class!");
         return;
     }
+
+    Class.findOne({ name: classObj.name }, (err, dbClass) => {
+        if (err) {
+            res.status(500).send(err.message);
+            return;
+        }
+
+        if (dbClass) {
+            res.status(400).send(
+                `There already exists a class called ${classObj.name}. Class names must be unique`
+            );
+
+            return;
+        }
+
+        classObj.save((err) => {
+            if (err) res.status(500).send(err.message);
+            else res.status(201).send(classObj);
+        });
+    });
 });
 
 // Update Class
 router.put("/:id", async (req, res) => {
     if ((await connect(res)) === 500) return;
 
-    if (req.body.name === "")
-        res.status(400).send("Cannot set empty class name");
-    else
-        await Class.findByIdAndUpdate(req.params.id, { ...req.body }, (err) => {
-            if (err) res.status(500).send("Internal Server Error...");
-            else res.status(201).send();
-        });
+    if ("name" in req.body) {
+        let hasErrored = false;
+
+        if (!req.body.name) {
+            res.status(400).send("Cannot set empty class name");
+            return;
+        } else {
+            await Class.findOne({ name: req.body.name }, (err, classArr) => {
+                if (err) {
+                    res.status(500).send(err.message);
+                    hasErrored = true;
+                    return;
+                }
+
+                if (classArr) {
+                    if (classArr._id == req.params.id) return;
+                    else {
+                        res.status(400).send(
+                            `There already exists a class named ${req.body.name}`
+                        );
+                        hasErrored = true;
+                        return;
+                    }
+                }
+            });
+        }
+
+        if (hasErrored) return;
+    }
+
+    await Class.findByIdAndUpdate(
+        req.params.id,
+        { ...req.body },
+        { new: true },
+        (err, dbChar) => {
+            if (err) res.status(500).send(err.message);
+            else res.status(201).send(dbChar);
+        }
+    );
 });
 
 // Delete Class
@@ -55,7 +100,7 @@ router.delete("/:id", async (req, res) => {
     if ((await connect(res)) === 500) return;
 
     await Class.findByIdAndDelete(req.params.id, (err) => {
-        if (err) res.status(500).send("Internal Server Error...");
+        if (err) res.status(500).send(err.message);
         else res.status(200).send();
     });
 });
@@ -63,7 +108,7 @@ router.delete("/:id", async (req, res) => {
 async function connect(res) {
     return await _connect(dbUri, dbOpts, (err) => {
         if (err) {
-            res.status(500).send("Internal Server Error...");
+            res.status(500).send(err.message);
             return 500;
         }
         return 200;
