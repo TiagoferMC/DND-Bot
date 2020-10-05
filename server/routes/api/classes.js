@@ -84,6 +84,10 @@ router.put("/:id", async (req, res) => {
         if (hasErrored) return;
     }
 
+    if ("classes" in req.body) {
+        return;
+    }
+
     await Class.findByIdAndUpdate(
         req.params.id,
         { ...req.body },
@@ -114,5 +118,21 @@ async function connect(res) {
         return 200;
     });
 }
+
+// // Add Ability to Class
+// async function addAbility(classObj, classLvl, abilityId) {
+//     classObj.abilities[classLvl].push(abilityId);
+//     await classObj.save();
+// }
+
+// // Delete Ability from Class
+// async function deleteAbility(classObj, classLvl, abilityId) {
+//     classObj.abilities[classLvl] = classObj.abilities[classLvl].filter(
+//         (ability) => {
+//             ability._id != abilityId;
+//         }
+//     );
+//     await classObj.save();
+// }
 
 export default router;
