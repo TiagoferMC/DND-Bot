@@ -1,3 +1,6 @@
+.metals
+.vscode
+
 # Config files
 /server/configs/
 
